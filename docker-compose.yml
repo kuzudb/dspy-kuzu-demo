@@ -1,0 +1,11 @@
+services:
+  explorer:
+    container_name: nobel
+    image: kuzudb/explorer:0.11.1
+    environment:
+      MODE: READ_ONLY
+      KUZU_FILE: nobel.kuzu
+    ports:
+      - 8000:8000
+    volumes:
+      - ./:/database
