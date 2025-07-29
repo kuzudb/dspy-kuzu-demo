@@ -43,7 +43,8 @@ def create_tables(conn: kuzu.Connection) -> None:
             prizeAmount INT64,
             prizeAmountAdjusted INT64
         )
-    """)
+    """
+    )
     conn.execute("CREATE NODE TABLE IF NOT EXISTS City(name STRING PRIMARY KEY, state STRING)")
     conn.execute("CREATE NODE TABLE IF NOT EXISTS Country(name STRING PRIMARY KEY)")
     conn.execute("CREATE NODE TABLE IF NOT EXISTS Continent(name STRING PRIMARY KEY)")

@@ -193,17 +193,17 @@ def create_scholar_reference_similarities(conn: kuzu.Connection) -> None:
         RETURN s.pk AS pk, s.vector AS vector
         """
     ).get_as_pl()
-    
+
     print(f"Creating similarity relationships for {len(scholars)} scholars to Reference nodes...")
-    
+
     # Collect all similarity relationships in a list
     similarity_relationships = []
-    
+
     # For each scholar, find top 3 most similar Reference nodes
     for i, row in enumerate(scholars.iter_rows(named=True)):
         pk = row["pk"]
         vector = row["vector"]
-        
+
         # Query vector index to find most similar Reference nodes
         similar_references = conn.execute(
             """
@@ -218,31 +218,29 @@ def create_scholar_reference_similarities(conn: kuzu.Connection) -> None:
                 distance
             ORDER BY distance
             """,
-            {"query_vector": vector}
+            {"query_vector": vector},
         ).get_as_pl()
-        
+
         # Take top 3 most similar Reference nodes
         similar_references = similar_references.head(3)
-        
+
         # Add to relationships list
         for similar_row in similar_references.iter_rows(named=True):
             similar_pk = similar_row["similar_pk"]
             distance = similar_row["distance"]
             similarity_score = 1.0 - distance
-            
-            similarity_relationships.append({
-                "source_pk": pk,
-                "target_pk": similar_pk,
-                "similarity_score": similarity_score
-            })
-        
+
+            similarity_relationships.append(
+                {"source_pk": pk, "target_pk": similar_pk, "similarity_score": similarity_score}
+            )
+
         if (i + 1) % 50 == 0:
             print(f"Processed {i + 1}/{len(scholars)} scholars")
-    
+
     # Create DataFrame and batch insert relationships
     if similarity_relationships:
         df_similarities = pl.DataFrame(similarity_relationships)
-        
+
         conn.execute(
             """
             LOAD FROM $df_similarities
@@ -251,10 +249,12 @@ def create_scholar_reference_similarities(conn: kuzu.Connection) -> None:
             MERGE (s)-[rel:SIMILAR_TO]->(r)
             SET rel.similarity_score = similarity_score
             """,
-            parameters={"df_similarities": df_similarities}
+            parameters={"df_similarities": df_similarities},
         )
-        
-        print(f"Created {len(similarity_relationships)} Scholar->Reference similarity relationships")
+
+        print(
+            f"Created {len(similarity_relationships)} Scholar->Reference similarity relationships"
+        )
 
 
 def create_vector_index(conn: kuzu.Connection, table_name: str, index_name: str) -> None:
@@ -315,6 +315,6 @@ if __name__ == "__main__":
     # Create vector index on scholar table
     create_vector_index(conn, "Scholar", "scholar_index")
     create_vector_index(conn, "Reference", "reference_index")
-    
+
     # Create similarity relationships between scholars and reference nodes
     create_scholar_reference_similarities(conn)

@@ -171,9 +171,12 @@ def get_prizes_df(filepath: str) -> pl.DataFrame:
     Load the prizes and affiliations from the reference data and return a DataFrame.
     """
     df = (
-        pl.read_json(filepath).select("id", "prizes").explode("prizes")
+        pl.read_json(filepath)
+        .select("id", "prizes")
+        .explode("prizes")
         .with_columns(
-            pl.col("prizes").struct.field("category")
+            pl.col("prizes")
+            .struct.field("category")
             .str.replace("Physiology or Medicine", "Medicine")
             .str.replace("Economic Sciences", "Economics")
             .str.to_lowercase()
@@ -181,10 +184,9 @@ def get_prizes_df(filepath: str) -> pl.DataFrame:
     )
     df = df.with_columns(
         pl.concat_str([pl.lit("l"), pl.col("id")], separator="").alias("laureate_id"),
-        pl.concat_str([
-            pl.col("prizes").struct.field("awardYear"),
-            pl.col("category")
-        ], separator="_").alias("prize_id"),
+        pl.concat_str(
+            [pl.col("prizes").struct.field("awardYear"), pl.col("category")], separator="_"
+        ).alias("prize_id"),
         pl.col("prizes").struct.field("portion"),
         pl.col("prizes").struct.field("awardYear").cast(pl.Int64),
         pl.col("prizes").struct.field("dateAwarded").str.to_date("%Y-%m-%d"),
