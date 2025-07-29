@@ -65,30 +65,8 @@ for a [research project](https://ideas.repec.org/p/arx/papers/2207.04441.html)
 around them, with the aim of understanding how a laureate's mentorship network could influences
 the likelihood of them winning a Nobel Prize.
 
-
 The data consists of a list of prizes awarded to individuals, along with the year and category of the prize,
-with a snippet of the data shown below. A "child" is the student or mentee, and a "parent" is the mentor or professor
-who influenced the mentee in some way.
-
-```json
-[
-  {
-    "children": [
-      {
-        "name": "George Smith",
-        "type": "laureate",
-        "category": "Physics",
-        "year": 2009
-      }
-    ],
-    "parents": [
-      {
-        "name": "Andrew Lawson",
-        "type": "scholar"
-      }
-    ]
-  }
-]
+with a snippet of the data shown below. A "child" is the student or mentee, and a "parent" is the mentor or professor who influenced the mentee in some way.
 
 ```json
 [
