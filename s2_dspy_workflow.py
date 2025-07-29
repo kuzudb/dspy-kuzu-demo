@@ -143,12 +143,12 @@ async def main(start: int, end: int):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--start", type=int, default=0, help="Start index (inclusive)")
-    parser.add_argument("--end", type=int, default=10_000, help="End index (exclusive)")
+    parser.add_argument("--start", "-s", type=int, default=0, help="Start index (inclusive)")
+    parser.add_argument("--end", "-e", type=int, default=10_000, help="End index (exclusive)")
     args = parser.parse_args()
-    if args.end <= args.start or any((args.start, args.end)) < 0:
+    if args.end <= args.start or any(x < 0 for x in (args.start, args.end)):
         raise ValueError(
             "Invalid start and end indices. Check that end > start and both are non-negative."
         )
 
-    asyncio.run(main(args.start, args.end))
+    # asyncio.run(main(args.start, args.end))
