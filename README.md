@@ -4,7 +4,7 @@ This repo contains an example of using DSPy for graph data enrichment, i.e., enr
 one source with data from another
 source. We'll do this by reframing the problem as an entity resolution task, where we match entities
 from the two datasets based on their attributes using vector search, and then merge the data from
-the richer of the two sources, to create an enriched data that we can then used to build a
+the richer of the two sources, to create enriched data that we can then use to build a
 more useful knowledge graph in Kuzu.
 
 ## Setup
@@ -94,7 +94,7 @@ won Nobel prizes between the years 1901-2022. The scholars (who worked with or m
 go back hundreds of years, all the way back to the days of Galileo and Isaac Newton in the 16th & 17th centuries!
 
 The raw data was parsed and extracted from the MATLAB file `NobelTree.m` in the source repository, and
-the resulting tree structure of chilren and parents was converted to a list of dictionaries and
+the resulting tree structure of children and parents was converted to a list of dictionaries and
 saved to the file `01_source_and_reference/nobeltree.json` in this repo.
 
 ### Data Source 2 (Nobel Prize API)
@@ -159,7 +159,7 @@ The first step is to create vector embeddings for useful text fields from both d
 on which we generate embeddings must be easily distinguishable in vector space. One example of
 this is a concatenation of the laureate's name, the prize category, and the year of the prize.
 
-An example of the `pk` column that forms the primary key (unique idenfifier) for each laureate
+An example of the `pk` column that forms the primary key (unique identifier) for each laureate
 in source 2 is shown below. A similar `pk` column is created for source 1 too.
 ```
 ┌─────┬──────────────┬───────────────────────────┬────────────────────────┐
