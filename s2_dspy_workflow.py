@@ -12,7 +12,8 @@ from pydantic import BaseModel
 import utils
 
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
-assert OPENROUTER_API_KEY is not None, "OPENROUTER_API_KEY is not set"
+if OPENROUTER_API_KEY is None:
+    raise ValueError("Environment variable 'OPENROUTER_API_KEY' is not set. Please set it to proceed.")
 
 EMBEDDING_MODEL = "nomic-embed-text"
 DB_NAME = "entity_vectors.kuzu"

@@ -159,9 +159,8 @@ def get_reference_laureates_df(filepath: str) -> pl.DataFrame:
     """
     with open(filepath, "r") as f:
         laureates = [Laureate(**item) for item in json.load(f)]
-    assert (
-        laureates is not None
-    ), "No laureates found, please check the filepath you're loading from"
+    if laureates is None:
+        raise ValueError("No laureates found in the file. Please check the filepath and ensure the file contains valid data.")
     laureates_clean = [person.model_dump(by_alias=True) for person in laureates]
     return pl.DataFrame(laureates_clean)
 
@@ -209,9 +208,8 @@ def get_affiliations_df(filepath: str) -> pl.DataFrame:
                 for affiliation in prize["affiliations"]:
                     affiliation["laureateID"] = item["id"]
                     affiliations.append(Affiliation(**affiliation))
-    assert (
-        affiliations is not None
-    ), "No affiliations found, please check the filepath you're loading from"
+    if affiliations is None:
+        raise ValueError("No affiliations found, please check the filepath you're loading from")
     affiliations_clean = [affiliation.model_dump() for affiliation in affiliations]
     return pl.DataFrame(affiliations_clean).unique()
 
