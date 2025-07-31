@@ -1,8 +1,8 @@
-# Graph data enrichment using entity resolution
+# Graph data enrichment using DSPy and Kuzu
 
 This repo contains an example of using DSPy for graph data enrichment, i.e., enriching data from
 one source with data from another
-source. We'll do this by reframing the problem as an entity resolution task, where we match entities
+source. We'll do this by reframing the problem as an entity disambiguation task, where we match entities
 from the two datasets based on their attributes using vector search, and then merge the data from
 the richer of the two sources, to create enriched data that we can then use to build a
 more useful knowledge graph in Kuzu.
@@ -29,24 +29,25 @@ We'll be working with two datasets:
 
 The purpose of this project is to enrich the rather sparse data for each laureate from source 1 (we
 just have their name, category, and year of the prize) with the far richer information available in
-source 2 (the Nobel Prize API). This can be framed as an entity resolution task for DSPy and
-an LLM as follows:
+source 2 (the Nobel Prize API).
 
 > [!IMPORTANT]
 > #### What is the role of DSPy in this workflow?
-> _"Given an entity from source 1, find the exact match from source 2, and obtain an ID mapping
-> between the two datasets, so that we can merge the data from source 2 into source 1."_
+> DSPy performs entity disambiguation to enable us to match and merge similar entities from the two datasets,
+> as per the problem statement below:  
+> _"Given an entity from source 1, find the exact match from source 2, and obtain an ID mapping_
+> _between the two datasets, so that we can merge the data from source 2 into source 1."_
 
-Once the dataset is enriched and persisted to a new JSON file, we can then use it to enrich
+Once the dataset is enriched and persisted to a new JSON file, we can then use it to update
 the original mentorship graph with the metadata from the Nobel Prize API, creating a
-knowledge graph that can answer more useful and complex queries about the laureates and their
+richer knowledge graph that can answer more useful and complex queries about the laureates and their
 mentorship relationships.
 
 ## Why DSPy?
 
-[DSPy](https://dspy.ai/) is a declarative framework for building composable and compound (multi-step) AI
+[DSPy](https://dspy.ai/) is a declarative framework for building composable and compound AI
 applications in a way that seamlessly integrates with non-AI workflows, such as data engineering.
-We'll show how DSPy is able to do the entity resolution task in a very concise way, and highlight
+We'll show how DSPy is able to do the entity disambiguation task in a very concise way, and highlight
 the key abstractions and primitives it uses that makes this possible.
 
 ---
@@ -181,12 +182,12 @@ are persisted to two different node tables in Kuzu, one for each dataset. The fo
 uv run s1_create_embeddings.py
 ```
 
-### Step 2: Entity resolution workflow in DSPy
+### Step 2: Entity disambiguation workflow in DSPy
 
-Strictly speaking, the task here is more similar to [_data conflation_](https://www.fullcircl.com/glossary/data-conflation)
-than entity resolution, since we are trying to combine two datasets that are not exactly the same.
-However, to identify with a high degree of confidence which entities from the two datasets
-correspond to the same person, we can frame it as an entity resolution problem.
+Strictly speaking, the task here is very similar to [_data conflation_](https://www.fullcircl.com/glossary/data-conflation),
+and benefits from disambiguating between similar entities, since we are trying to merge two datasets that are not exactly the same.
+To identify with a high degree of confidence which entities from the two datasets
+correspond to the same person, we need to first disambiguate entities based on their attributes.
 We use DSPy to run an "LLM-as-a-judge" workflow that can look at
 the top 3 most similar entities from source 2 for each entity in source 1 and determine if
 they are the same person or not.
