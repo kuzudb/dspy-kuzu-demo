@@ -26,6 +26,7 @@ def create_tables(conn: kuzu.Connection) -> None:
             scholar_type STRING,
             name STRING,
             fullName STRING,
+            knownName STRING,
             gender STRING,
             birthDate DATE,
             deathDate DATE
@@ -54,6 +55,7 @@ def create_tables(conn: kuzu.Connection) -> None:
     conn.execute("CREATE REL TABLE IF NOT EXISTS BORN_IN(FROM Scholar TO City)")
     conn.execute("CREATE REL TABLE IF NOT EXISTS DIED_IN(FROM Scholar TO City)")
     conn.execute("CREATE REL TABLE IF NOT EXISTS IS_CITY_IN(FROM City TO Country)")
+    conn.execute("CREATE REL TABLE IF NOT EXISTS IS_LOCATED_IN(FROM Institution TO City)")
     conn.execute("CREATE REL TABLE IF NOT EXISTS AFFILIATED_WITH(FROM Scholar TO Institution)")
     conn.execute("CREATE REL TABLE IF NOT EXISTS WON(FROM Scholar TO Prize, portion STRING)")
     conn.execute("CREATE REL TABLE IF NOT EXISTS IS_COUNTRY_IN(FROM Country TO Continent)")
@@ -69,11 +71,12 @@ def merge_laureate_nodes(conn: kuzu.Connection, df: pl.DataFrame) -> None:
     res = conn.execute(
         """
         LOAD FROM $df
-        WITH DISTINCT id, name, fullName, gender, birthDate, deathDate
+        WITH DISTINCT id, knownName, fullName, gender, birthDate, deathDate
         MERGE (s:Scholar {id: id})
-        SET s.name = name,
+        SET s.name = knownName,
             s.scholar_type = 'laureate',
             s.fullName = fullName,
+            s.knownName = knownName,
             s.gender = gender,
             s.birthDate = birthDate,
             s.deathDate = deathDate
@@ -300,6 +303,22 @@ def merge_laureate_affiliation_rels(conn: kuzu.Connection, df: pl.DataFrame) -> 
     print(f"{num_laureate_affiliation_rels} laureate-affiliation relationships ingested")
 
 
+def merge_city_affiliation_rels(conn: kuzu.Connection, df: pl.DataFrame) -> None:
+    res = conn.execute(
+        """
+        LOAD FROM $df
+        WHERE cityNow IS NOT NULL AND nameNow IS NOT NULL
+        MATCH (i:Institution {name: nameNow})
+        MATCH (ci:City {name: cityNow})
+        MERGE (i)-[r:IS_LOCATED_IN]->(ci)
+        RETURN count(DISTINCT r) AS num_city_affiliation_rels
+    """,
+        parameters={"df": df},
+    )
+    num_city_affiliation_rels = res.get_as_pl()["num_city_affiliation_rels"][0]
+    print(f"{num_city_affiliation_rels} city-affiliation relationships ingested")
+
+
 def merge_country_affiliation_rels(conn: kuzu.Connection, df: pl.DataFrame) -> None:
     res = conn.execute(
         """
@@ -340,6 +359,7 @@ def main(source_filepath: str, reference_filepath: str) -> None:
     merge_laureate_prize_rels(conn, prizes_df)
     merge_laureate_affiliation_rels(conn, affiliations_df)
     merge_country_affiliation_rels(conn, affiliations_df)
+    merge_city_affiliation_rels(conn, affiliations_df)
 
     # Test query to see if the mentored relationships are ingested correctly
     # Neils Bohr was mentored by 3 people, but his son, Aage was mentored by Neils himself

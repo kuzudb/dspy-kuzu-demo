@@ -69,7 +69,7 @@ class Laureate(BaseModel):
     """
 
     id: str
-    knownName: str = Field(alias="name")
+    knownName: str
     fullName: str
     gender: str
     birthDate: date | None = None
@@ -161,7 +161,7 @@ def get_reference_laureates_df(filepath: str) -> pl.DataFrame:
         laureates = [Laureate(**item) for item in json.load(f)]
     if laureates is None:
         raise ValueError("No laureates found in the file. Please check the filepath and ensure the file contains valid data.")
-    laureates_clean = [person.model_dump(by_alias=True) for person in laureates]
+    laureates_clean = [person.model_dump() for person in laureates]
     return pl.DataFrame(laureates_clean)
 
 
@@ -224,11 +224,11 @@ if __name__ == "__main__":
     # res = conn.execute("MATCH (n:Scholar) RETURN n.name, n.category, n.year")
     # print(res.get_as_pl())
 
-    # print(
-    #     get_reference_laureates_df("./data/01_source_and_reference/reference.json").select(
-    #         "name", "birthPlaceCity"
-    #     )
-    # )
+    print(
+        get_reference_laureates_df("./data/01_source_and_reference/reference.json").select(
+            "knownName", "birthPlaceCity"
+        )
+    )
 
     # df = get_prizes_df("./data/01_source_and_reference/reference.json")
     # print(df)
