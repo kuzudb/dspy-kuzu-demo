@@ -140,7 +140,6 @@ def ingest_laureate_data(conn: kuzu.Connection, df: pl.DataFrame) -> pl.DataFram
 
 def ingest_reference_data(conn: kuzu.Connection, df: pl.DataFrame) -> pl.DataFrame:
     """Ingest data into the Reference node table"""
-    print(df.filter(pl.col("pk").str.contains("bardeen")).head())
     df = df.unique(subset=["pk"])
     conn.execute(
         """
