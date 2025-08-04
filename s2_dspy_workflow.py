@@ -82,7 +82,7 @@ def get_similar_records(
 # --- DSPy signatures & modules ---
 
 
-class EntityResolver(dspy.Signature):
+class EntityHandler(dspy.Signature):
     """
     Return the reference record `id` that's most likely the same person as the sample record.
     - The result must contain ONLY ONE reference record `id`
@@ -99,18 +99,18 @@ class EntityResolver(dspy.Signature):
     )
 
 
-async def execute_entity_resolution(
+async def execute_entity_disambiguation(
     sample: Scholar, reference_records: list[Reference]
 ) -> tuple[int, str]:
     """
-    Execute the DSPy entity resolution module.
+    Execute the DSPy entity disambiguation module.
 
     The approach is similar to "LLM as a judge". The LLM is given a list of reference records
     and a sample laureate record, and it needs to determine which reference record is most likely
     the same person as the sample laureate record.
     """
-    resolver = dspy.Predict(EntityResolver)
-    result = await resolver.acall(sample=sample, reference_records=reference_records)
+    handler = dspy.Predict(EntityHandler)
+    result = await handler.acall(sample=sample, reference_records=reference_records)
     return result.output, result.confidence
 
 
@@ -119,7 +119,7 @@ async def main(start: int, end: int):
         name, category, award_year, vector = record.values()
         reference_records = get_similar_records(conn, vector)
         scholar = Scholar(name=name, category=category)
-        result_id, confidence = await execute_entity_resolution(scholar, reference_records)
+        result_id, confidence = await execute_entity_disambiguation(scholar, reference_records)
         matched_record = [record for record in reference_records if record.id == result_id][0]
         print(f"Sample '{name}' -> Reference ID {result_id}")
         print(f"Matched record: {matched_record}")
@@ -152,4 +152,4 @@ if __name__ == "__main__":
             "Invalid start and end indices. Check that end > start and both are non-negative."
         )
 
-    # asyncio.run(main(args.start, args.end))
+    asyncio.run(main(args.start, args.end))

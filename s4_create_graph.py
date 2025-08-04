@@ -319,6 +319,22 @@ def merge_city_affiliation_rels(conn: kuzu.Connection, df: pl.DataFrame) -> None
     print(f"{num_city_affiliation_rels} city-affiliation relationships ingested")
 
 
+def merge_city_country_affiliation_rels(conn: kuzu.Connection, df: pl.DataFrame) -> None:
+    res = conn.execute(
+        """
+        LOAD FROM $df
+        WHERE cityNow IS NOT NULL AND countryNow IS NOT NULL
+        MATCH (ci:City {name: cityNow})
+        MATCH (co:Country {name: countryNow})
+        MERGE (ci)-[r:IS_CITY_IN]->(co)
+        RETURN count(DISTINCT r) AS num_city_country_rels
+    """,
+        parameters={"df": df},
+    )
+    num_city_country_rels = res.get_as_pl()["num_city_country_rels"][0]
+    print(f"{num_city_country_rels} city-country relationships ingested")
+
+
 def merge_country_affiliation_rels(conn: kuzu.Connection, df: pl.DataFrame) -> None:
     res = conn.execute(
         """
@@ -360,6 +376,7 @@ def main(source_filepath: str, reference_filepath: str) -> None:
     merge_laureate_affiliation_rels(conn, affiliations_df)
     merge_country_affiliation_rels(conn, affiliations_df)
     merge_city_affiliation_rels(conn, affiliations_df)
+    merge_city_country_affiliation_rels(conn, affiliations_df)
 
     # Test query to see if the mentored relationships are ingested correctly
     # Neils Bohr was mentored by 3 people, but his son, Aage was mentored by Neils himself

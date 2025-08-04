@@ -16,7 +16,7 @@ This is an entity resolution demonstration using DSPy (declarative language mode
    - Outputs: `entity_vectors.kuzu` database
 
 2. **s2_dspy_workflow.py**: Performs LLM-based entity resolution
-   - Uses DSPy framework with structured `EntityResolver` signature
+   - Uses DSPy framework with structured `EntityHandler` signature
    - Queries vector indices to find candidate matches
    - Employs the Gemini 2.0 Flash model using OpenRouter for reasoning about entity matches
    - Supports async processing with confidence scoring and batch operations
@@ -24,7 +24,7 @@ This is an entity resolution demonstration using DSPy (declarative language mode
 
 3. **s3_merge_datasets.py**: Maps entities to consistent IDs 
    - Builds lookup tables for laureates (l-prefixed) and scholars (s-prefixed)
-   - Merges resolved entity mappings with source data
+   - Merges the disambiguated entity mappings with source data
    - Ensures consistent ID assignment across the entire dataset
    - Outputs: `data/03_merge_datasets/result.json`
 
@@ -81,7 +81,7 @@ python -m utils           # Test utility functions
 - Custom `query_vector_index()` function for efficient similarity search
 
 **Entity Resolution** (`s2_dspy_workflow.py`):
-- DSPy `EntityResolver` signature with structured LLM prompting
+- DSPy `EntityHandler` signature with structured LLM prompting
 - Async batch processing with confidence scoring ("high"/"low")
 - Shuffles vector search results to exercise LLM reasoning
 - OpenRouter integration with Gemini 2.0 Flash model
