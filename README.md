@@ -7,6 +7,9 @@ from the two datasets based on their attributes using vector search, and then me
 the richer of the two sources, to create enriched data that we can then use to build a
 more useful knowledge graph in Kuzu.
 
+You can also read our [blog post](https://blog.kuzudb.com/post/graph-data-enrichment-using-dspy/) that
+explains this methodology at a higher level.
+
 ## Setup
 
 Use [uv](https://docs.astral.sh/uv/) to install the dependencies.
